@@ -12,6 +12,8 @@ public class CivicDraft {
     private boolean videos;
     private String locationText;
     private String legalCandidatesJson;
+    @Column(columnDefinition = "TEXT")
+    private String body; // 초안 본문
 
     // getter/setter
     public Long getId() { return id; }
@@ -26,4 +28,6 @@ public class CivicDraft {
     public void setLocationText(String locationText) { this.locationText = locationText; }
     public String getLegalCandidatesJson() { return legalCandidatesJson; }
     public void setLegalCandidatesJson(String legalCandidatesJson) { this.legalCandidatesJson = legalCandidatesJson; }
+    public String getBody() { return body; }
+    public void setBody(String body) { this.body = body; }
 }
