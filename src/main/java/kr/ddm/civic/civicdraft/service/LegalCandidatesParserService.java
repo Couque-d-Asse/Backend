@@ -1,4 +1,4 @@
-package kr.ddm.civic.civic_assist.service;
+package kr.ddm.civic.civicdraft.service;
 
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;

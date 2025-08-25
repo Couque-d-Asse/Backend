@@ -1,6 +1,6 @@
-package kr.ddm.civic.civic_assist.dto;
+package kr.ddm.civic.civicdraft.dto;
 
-public class CivicAssistRequest {
+public class CivicDraftRequest {
     private String userText;
     private boolean photos;
     private boolean videos;

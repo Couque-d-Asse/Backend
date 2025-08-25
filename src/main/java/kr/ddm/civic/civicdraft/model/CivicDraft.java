@@ -1,9 +1,9 @@
-package kr.ddm.civic.civic_assist.model;
+package kr.ddm.civic.civicdraft.model;
 
 import jakarta.persistence.*;
 
 @Entity
-public class CivicAssist {
+public class CivicDraft {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

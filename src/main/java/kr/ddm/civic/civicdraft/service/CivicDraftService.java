@@ -1,15 +1,30 @@
-    package kr.ddm.civic.civic_assist.service;
+package kr.ddm.civic.civicdraft.service;
+
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
     import org.springframework.stereotype.Service;
     import org.springframework.beans.factory.annotation.Autowired;
-    import kr.ddm.civic.civic_assist.dto.CivicAssistRequest;
-    import kr.ddm.civic.civic_assist.dto.CivicAssistResponse;
-    import kr.ddm.civic.civic_assist.model.CivicAssist;
-    import kr.ddm.civic.civic_assist.repository.CivicAssistRepository;
+    import kr.ddm.civic.civicdraft.dto.CivicDraftRequest;
+    import kr.ddm.civic.civicdraft.dto.CivicDraftResponse;
+    import kr.ddm.civic.civicdraft.model.CivicDraft;
+    import kr.ddm.civic.civicdraft.repository.CivicDraftRepository;
     import java.util.*;
 
     @Service
-    public class CivicAssistService {
+    public class CivicDraftService {
+    public void processRequestSse(CivicDraftRequest request, SseEmitter emitter) {
+        // 예시: 토큰 단위로 AI 응답을 받아 emitter로 전송
+        try {
+            // 실제로는 Python 서버에 SSE 요청 후, 응답을 emitter.send()로 전달
+            for (int i = 0; i < 5; i++) {
+                emitter.send("draft_chunk_" + i);
+                Thread.sleep(500); // 예시: 0.5초마다 전송
+            }
+            emitter.complete();
+        } catch (Exception e) {
+            emitter.completeWithError(e);
+        }
+    }
         // Object를 List<String>으로 안전하게 변환하는 유틸리티
         private List<String> toStringList(Object obj) {
             List<String> result = new ArrayList<>();
@@ -24,7 +39,7 @@
         }
 
         @Autowired
-        private CivicAssistRepository civicAssistRepository;
+        private CivicDraftRepository civicDraftRepository;
 
         @Autowired
         private InputParserService inputParserService;
@@ -41,7 +56,7 @@
         @Autowired
         private ChannelFieldsBuilderService channelFieldsBuilderService;
 
-        public CivicAssistResponse processRequest(CivicAssistRequest request) {
+        public CivicDraftResponse processRequest(CivicDraftRequest request) {
             // 1. 입력 파싱(구조화)
             Map<String, Object> parsed = inputParserService.parse(
                 request.getUserText(), request.isPhotos(), request.isVideos(), request.getLocationText()
@@ -70,16 +85,16 @@
             Map<String, Object> safetyFlags = qualityAssessorService.assessSafety((String) draft.get("body"));
 
             // DB 저장
-            CivicAssist entity = new CivicAssist();
+        CivicDraft entity = new CivicDraft();
             entity.setUserText(request.getUserText());
             entity.setPhotos(request.isPhotos());
             entity.setVideos(request.isVideos());
             entity.setLocationText(request.getLocationText());
             entity.setLegalCandidatesJson(request.getLegalCandidatesJson());
-            civicAssistRepository.save(entity);
+        civicDraftRepository.save(entity);
 
             // 응답 생성
-            CivicAssistResponse response = new CivicAssistResponse();
+        CivicDraftResponse response = new CivicDraftResponse();
             response.setChannel(channel);
             response.setTitle((String) draft.get("title"));
             response.setBody((String) draft.get("body"));

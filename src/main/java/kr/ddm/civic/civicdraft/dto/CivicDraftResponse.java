@@ -1,9 +1,9 @@
-package kr.ddm.civic.civic_assist.dto;
+package kr.ddm.civic.civicdraft.dto;
 
 import java.util.List;
 import java.util.Map;
 
-public class CivicAssistResponse {
+public class CivicDraftResponse {
     private String channel;
     private String title;
     private String body;

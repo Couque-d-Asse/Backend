@@ -1,13 +1,13 @@
-package kr.ddm.civic.civic_assist;
+package kr.ddm.civic.civicdraft;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class CivicAssistApplication {
+public class CivicDraftApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CivicAssistApplication.class, args);
+	SpringApplication.run(CivicDraftApplication.class, args);
 	}
 
 }
