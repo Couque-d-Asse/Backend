@@ -1,0 +1,29 @@
+package kr.ddm.civic.civic_assist.model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class CivicAssist {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String userText;
+    private boolean photos;
+    private boolean videos;
+    private String locationText;
+    private String legalCandidatesJson;
+
+    // getter/setter
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getUserText() { return userText; }
+    public void setUserText(String userText) { this.userText = userText; }
+    public boolean isPhotos() { return photos; }
+    public void setPhotos(boolean photos) { this.photos = photos; }
+    public boolean isVideos() { return videos; }
+    public void setVideos(boolean videos) { this.videos = videos; }
+    public String getLocationText() { return locationText; }
+    public void setLocationText(String locationText) { this.locationText = locationText; }
+    public String getLegalCandidatesJson() { return legalCandidatesJson; }
+    public void setLegalCandidatesJson(String legalCandidatesJson) { this.legalCandidatesJson = legalCandidatesJson; }
+}
