@@ -1,0 +1,52 @@
+# Node.js
+node_modules/
+**/node_modules/
+
+# Dependency lock files
+package-lock.json
+**/package-lock.json
+
+# Build output
+/dist/
+/build/
+
+# Environment files
+.env
+**/.env
+
+# OS/utility
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Logs
+*.log
+**/*.log
+
+# PWA cache/service worker
+sw.js
+**/sw.js
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Images (cache, output)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Python cache (혹시 생성될 경우)
+__pycache__/
+**/__pycache__/
+
+# 기타
+*.bak
+*.tmp
