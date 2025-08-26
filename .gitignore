@@ -1,0 +1,50 @@
+# IDE & build system
+.gradle
+build/
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+.vscode/
+
+# STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Python
+python-server/__pycache__/
+python-server/.env
+draft/.env
+python-server/.venv/
+python-server/*.pyc
+python-server/*.pyo
+python-server/*.pyd
+python-server/.DS_Store
+python-server/*.db
+python-server/*.sqlite3
+
+# Node.js
+bookMarklet/ddmmarklet/node_modules/
+bookMarklet/saeolmarklet/node_modules/
+bookMarklet/safetymarklet/node_modules/
+
+# OS/utility
+.DS_Store
+*.log
+
+# 기타
+HELP.md
