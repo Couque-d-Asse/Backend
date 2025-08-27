@@ -25,13 +25,13 @@ import java.io.*;
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         String url = "http://localhost:8000/process/stream";
         // 요청 JSON 생성
+        // 요청 JSON 생성 (legalCandidatesJson 제거)
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("{")
             .append("\"userText\":\"").append(escapeJson(request.getUserText())).append("\",")
             .append("\"photos\":").append(request.isPhotos()).append(",")
             .append("\"videos\":").append(request.isVideos()).append(",")
-            .append("\"locationText\":\"").append(escapeJson(request.getLocationText())).append("\",")
-            .append("\"legalCandidatesJson\":\"").append(escapeJson(request.getLegalCandidatesJson())).append("\"");
+            .append("\"locationText\":\"").append(escapeJson(request.getLocationText())).append("\"");
         jsonBuilder.append("}");
         RequestBody body = RequestBody.create(jsonBuilder.toString(), JSON);
         Request httpRequest = new Request.Builder()
@@ -75,7 +75,6 @@ import java.io.*;
                     entity.setPhotos(request.isPhotos());
                     entity.setVideos(request.isVideos());
                     entity.setLocationText(request.getLocationText());
-                    entity.setLegalCandidatesJson(request.getLegalCandidatesJson());
                     entity.setBody(draftBody); // 초안 본문 저장
                     civicDraftRepository.save(entity);
 
@@ -126,24 +125,30 @@ import java.io.*;
         @Autowired
         private QualityAssessorService qualityAssessorService;
         @Autowired
-        private LegalCandidatesParserService legalCandidatesParserService;
-        @Autowired
         private ChannelFieldsBuilderService channelFieldsBuilderService;
 
         public CivicDraftResponse processRequest(CivicDraftRequest request) {
-    // ...기존 동작 주석으로 구분...
-    // 1. 입력 파싱 및 채널 분류
+    // 1. 입력 파싱
     Map<String, Object> parsed = inputParserService.parse(request.getUserText(), request.isPhotos(), request.isVideos(), request.getLocationText());
-    String channel = channelClassifierService.classify((String) parsed.get("issueType"));
+
+    // 1-2. 카드형 추천 로직 적용
+    kr.ddm.civic.civicdraft.dto.Issue issue = new kr.ddm.civic.civicdraft.dto.Issue();
+    issue.setTitle((String) parsed.getOrDefault("title", ""));
+    issue.setDescription((String) parsed.getOrDefault("description", request.getUserText()));
+    issue.setLocation((String) parsed.getOrDefault("location", request.getLocationText()));
+    @SuppressWarnings("unchecked")
+    List<String> tags = parsed.containsKey("tags") ? (List<String>) parsed.get("tags") : new ArrayList<>();
+    issue.setTags(tags);
+    issue.setEvidenceCount((request.isPhotos() ? 1 : 0) + (request.isVideos() ? 1 : 0));
+    String channel = channelClassifierService.recommend(issue).getRecommendedChannel();
 
     // 2. 초안 생성
     List<String> facts = toStringList(parsed.get("facts"));
     List<String> desiredActions = toStringList(parsed.get("desiredActions"));
     Map<String, Object> draft = draftGeneratorService.generateDraft(facts, desiredActions, (String) parsed.get("location"), (String) parsed.get("issueType"));
 
-    // 3. 법령 근거 첨부
-    List<Map<String, Object>> legalCandidates = legalCandidatesParserService.parse(request.getLegalCandidatesJson());
-    List<Map<String, Object>> legalBasis = legalBasisService.buildLegalBasis(legalCandidates);
+    // 3. 법령 근거 첨부 (legalCandidatesJson 제거, 빈 리스트 전달)
+    List<Map<String, Object>> legalBasis = legalBasisService.buildLegalBasis(new ArrayList<>());
 
     // 4. 품질/안전 평가
     double confidence = qualityAssessorService.assessConfidence(true, true, true); // TODO: 실제 평가 로직 구현 필요
@@ -155,7 +160,6 @@ import java.io.*;
     entity.setPhotos(request.isPhotos());
     entity.setVideos(request.isVideos());
     entity.setLocationText(request.getLocationText());
-    entity.setLegalCandidatesJson(request.getLegalCandidatesJson());
     civicDraftRepository.save(entity);
 
     // 6. 응답 생성

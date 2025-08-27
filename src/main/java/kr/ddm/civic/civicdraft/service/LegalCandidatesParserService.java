@@ -1,19 +1,16 @@
 package kr.ddm.civic.civicdraft.service;
 
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.ObjectMapper;
+// import 제거: 더 이상 사용하지 않음
 import java.util.*;
 
 @Service
 public class LegalCandidatesParserService {
-    public List<Map<String, Object>> parse(String legalCandidatesJson) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(legalCandidatesJson,
-                mapper.getTypeFactory().constructCollectionType(List.class,
-                    mapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class)));
-        } catch (Exception e) {
-            return new ArrayList<>();
-        }
+    /**
+     * 법령 후보 파싱 기능 제거됨 (legalCandidatesJson 사용하지 않음)
+     * 필요시 다른 입력 방식으로 확장 가능
+     */
+    public List<Map<String, Object>> parse() {
+        return new ArrayList<>();
     }
 }
