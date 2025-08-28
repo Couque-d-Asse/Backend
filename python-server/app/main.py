@@ -54,38 +54,6 @@ class RecommendRequest(BaseModel):
     issue: Issue
     channels: List[Channel]
 
-# =====================
-# 초안 생성 API (REST)
-# =====================
-@app.post("/process")
-def process(request: CivicAssistRequest):
-    """
-    민원 초안 생성 (REST)
-    - 사용자의 민원 요약+제목을 바탕으로 초안 전체 결과 반환
-    """
-    prompt_text = f"""
-민원 요약: {request.summary}
-민원 제목: {request.title}
-위 정보를 바탕으로 민원 본문을 작성해줘. 어떤 사진 첨부가 필요한지 안내해줘. 관련 법률정보도 함께 추천해줘.
-"""
-    messages = [
-        {"role": "system", "content": "민원 초안 생성 서비스. 사용자의 민원 요약과 제목을 바탕으로 초안을 생성하세요."},
-        {"role": "user", "content": prompt_text}
-    ]
-    gpt_result = call_gpt(messages) or ""
-    try:
-        draft_result = generate_draft(request.summary, request.title)
-        if draft_result:
-            gpt_result = draft_result
-    except Exception as e:
-        print("LangChain 초안 생성 오류:", e)
-        traceback.print_exc()
-    # 예시: candidates는 실제로는 GPT/LLM 또는 DB 등에서 받아야 함
-    return CivicAssistResponse(
-        channel="saeol",
-        title=request.title,
-        body=gpt_result
-    )
 
 # =====================
 # 초안 생성 API (SSE)

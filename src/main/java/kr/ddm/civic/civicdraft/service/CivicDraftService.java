@@ -99,29 +99,11 @@ public class CivicDraftService {
             channel = "";
         }
 
-        // 2. Python 서버에서 초안(title, body) 생성
-        String title = request.getTitle();
-        String bodyText = request.getSummary();
-        try {
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            String json = mapper.writeValueAsString(request);
-            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
-            okhttp3.RequestBody body = okhttp3.RequestBody.create(json, okhttp3.MediaType.parse("application/json; charset=utf-8"));
-            okhttp3.Request httpRequest = new okhttp3.Request.Builder()
-                    .url("http://localhost:8000/generate_draft")
-                    .post(body)
-                    .addHeader("Accept", "application/json")
-                    .build();
-            okhttp3.Response response = client.newCall(httpRequest).execute();
-            if (response.isSuccessful() && response.body() != null) {
-                String resp = response.body().string();
-                Map<String, Object> respMap = mapper.readValue(resp, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
-                title = (String) respMap.getOrDefault("title", title);
-                bodyText = (String) respMap.getOrDefault("body", bodyText);
-            }
-        } catch (Exception e) {
-            // fallback: 기존 요청값 사용
-        }
+    // 2. Python 서버 SSE 초안 생성 엔드포인트 호출
+    // CivicDraftService에서는 SSE 방식만 사용하도록 변경됨
+    // 실제 본문 생성은 processRequestSse에서 처리됨
+    String title = request.getTitle();
+    String bodyText = request.getSummary();
 
         // 3. DB 저장 (공개일 때만)
         if ("public".equalsIgnoreCase(publicVisibility)) {
