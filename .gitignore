@@ -48,4 +48,4 @@ python-server/*.db
 python-server/*.sqlite3
 python-server/venv/
 .env
-app.log
+app.log*
