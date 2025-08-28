@@ -5,7 +5,9 @@ from typing import Any, List, Dict
 import time
 import traceback
 from dotenv import load_dotenv
-load_dotenv()
+import os
+# python-server 루트의 .env 파일을 명시적으로 로드
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 from gpt_service import call_gpt
 from draft_generator import generate_draft
 from legal_basis import build_legal_basis
