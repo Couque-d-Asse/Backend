@@ -10,6 +10,13 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+/**
+ * 채널 추천 서비스
+ * classifier.yml 기반으로 민원 요약에서 채널별 점수/추천/근거 생성
+ */
+@Schema(description = "채널 추천 서비스. classifier.yml 기반으로 민원 요약에서 채널별 점수/추천/근거 생성.")
 @Service
 public class ChannelClassifierService {
     private static final Logger log = LoggerFactory.getLogger(ChannelClassifierService.class);

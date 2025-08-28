@@ -2,7 +2,12 @@ package kr.ddm.civic.civicdraft.service;
 
 import org.springframework.stereotype.Service;
 import java.util.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * 민원 초안 본문 및 첨부 안내 생성 서비스
+ */
+@Schema(description = "민원 초안 본문 및 첨부 안내 생성 서비스. GPT 기반 본문, 첨부 안내 텍스트 생성.")
 @Service
 public class DraftGeneratorService {
     /**

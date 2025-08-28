@@ -1,19 +1,29 @@
 package kr.ddm.civic.civicdraft.dto;
 
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 추천 카드형 옵션 정보
  */
+@Schema(description = "추천 카드형 옵션 정보. 채널별 추천 카드에 표시되는 정보.")
 public class ChannelOption {
-    private String id; // "safety_report" | "mayor_board" | "saeol"
-    private String title; // 프런트 표시명
-    private double score; // 원점수
-    private double confidence; // 정규화 신뢰도
-    private List<String> reasonCodes; // 의사결정 근거 코드
-    private List<String> matchedTerms; // 매칭된 실제 단어/구절
-    private String suggestedTemplate; // 프런트 기본 문안
-    private boolean highlight; // 추천 여부
+    @Schema(description = "채널 id", example = "safety_report")
+    private String id;
+    @Schema(description = "채널 표시명", example = "안전신문고")
+    private String title;
+    @Schema(description = "원점수", example = "1.2")
+    private double score;
+    @Schema(description = "정규화 신뢰도", example = "0.95")
+    private double confidence;
+    @Schema(description = "의사결정 근거 코드", example = "[\"KW_신호\", \"PEN_불법\"]")
+    private List<String> reasonCodes;
+    @Schema(description = "매칭된 실제 단어/구절", example = "[\"신호\", \"불법\"]")
+    private List<String> matchedTerms;
+    @Schema(description = "추천 기본 문안", example = "[서울] 불법주정차로 병목 발생 신고 ...")
+    private String suggestedTemplate;
+    @Schema(description = "추천 여부(하이라이트)", example = "true")
+    private boolean highlight;
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

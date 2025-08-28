@@ -2,7 +2,12 @@ package kr.ddm.civic.civicdraft.service;
 
 import org.springframework.stereotype.Service;
 import java.util.*;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * 법률 근거 및 요약 생성 서비스
+ */
+@Schema(description = "법률 근거 및 요약 생성 서비스. 민원 이슈와 관련된 법률정보를 생성 및 요약.")
 @Service
 public class LegalBasisService {
     /**
