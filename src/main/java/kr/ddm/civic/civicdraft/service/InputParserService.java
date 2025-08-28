@@ -14,7 +14,7 @@ public class InputParserService {
     /**
      * 민원 요약에서 각종 정보 추출
      */
-    public Map<String, Object> parse(String userText, boolean photos, boolean videos, String locationText) {
+    public Map<String, Object> parse(String userText, boolean photos, String locationText) {
         Map<String, Object> result = new HashMap<>();
         // 장소 추출
         String location = (locationText != null && !locationText.isEmpty()) ? locationText : extractLocation(userText);
@@ -29,7 +29,7 @@ public class InputParserService {
         List<String> desiredActions = extractDesiredActions(userText);
         result.put("desiredActions", desiredActions);
         // 첨부
-        result.put("attachments", Map.of("photos", photos, "videos", videos));
+        result.put("attachments", Map.of("photos", photos));
         // 누락 필드
         List<String> missingFields = new ArrayList<>();
         if (location == null || location.isEmpty()) missingFields.add("주소");

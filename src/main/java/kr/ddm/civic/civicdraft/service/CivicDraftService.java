@@ -126,7 +126,7 @@ public class CivicDraftService {
      */
     public CivicDraftResponse processRequest(CivicDraftRequest request) {
         // 1. 입력 파싱
-        Map<String, Object> parsed = inputParserService.parse(request.getBody(), false, false, "");
+    Map<String, Object> parsed = inputParserService.parse(request.getBody(), false, "");
 
         // 2. 카드형 추천 로직 적용
         kr.ddm.civic.civicdraft.dto.Issue issue = new kr.ddm.civic.civicdraft.dto.Issue();

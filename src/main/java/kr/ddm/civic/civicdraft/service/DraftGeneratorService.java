@@ -20,27 +20,60 @@ public class DraftGeneratorService {
      */
     public Map<String, Object> generateDraft(List<String> facts, List<String> desiredActions, String location, String issueType) {
         Map<String, Object> draft = new HashMap<>();
-        // 제목 생성
-        String title = location + " " + issueType + " 관련 민원";
-        // 본문 생성
-        StringBuilder body = new StringBuilder();
-        body.append("안녕하십니까. ").append(location).append(" 주민입니다. ");
+        // Python 서버에 요청할 userText 생성 (CivicDraftRequest의 모든 주요 필드 포함)
+        StringBuilder userText = new StringBuilder();
+        userText.append("민원 제목: ").append(issueType != null ? issueType : "").append(" ").append(location != null ? location : "").append("\n");
+        // 실제 CivicDraftRequest 객체를 받아야 더 풍부하게 가능하지만, 현재 파라미터 기반으로 최대한 정보 포함
+        userText.append("상세주소: ").append(location != null ? location : "").append("\n");
+        userText.append("민원 내용: ").append(issueType != null ? issueType : "").append("\n");
         if (!facts.isEmpty()) {
-            body.append("최근 다음과 같은 문제가 발생하고 있습니다: ");
-            body.append(String.join(", ", facts)).append(". ");
+            userText.append("사실: ").append(String.join(", ", facts)).append("\n");
         }
-        body.append("이에 따라 다음과 같은 조치를 요청드립니다. ");
-        for (String action : desiredActions) {
-            body.append("- ").append(action).append("\n");
+        if (!desiredActions.isEmpty()) {
+            userText.append("요청사항: ").append(String.join(", ", desiredActions)).append("\n");
         }
-        draft.put("title", title);
-        draft.put("body", body.toString());
-        draft.put("bulletedRequests", desiredActions);
 
-        // 첨부 안내: 프론트에 안내할 텍스트
-        String attachmentGuidance = "현장 사진(문제 상황, 위치 식별 가능), 관련 영상(필요시), 증빙자료 첨부 시 처리 속도 향상";
-        draft.put("attachmentGuidance", attachmentGuidance);
-
+        // OkHttp로 Python 서버 /process 호출
+        try {
+            okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+            okhttp3.MediaType JSON = okhttp3.MediaType.parse("application/json; charset=utf-8");
+            String url = "http://localhost:8000/process";
+            String json = "{\"userText\":\"" + escapeJson(userText.toString()) + "\",\"photos\":false,\"videos\":false,\"locationText\":\"" + escapeJson(location) + "\"}";
+            System.out.println("[DraftGeneratorService] Python 서버로 전달되는 JSON: " + json);
+            okhttp3.RequestBody body = okhttp3.RequestBody.create(json, JSON);
+            okhttp3.Request request = new okhttp3.Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .addHeader("Accept", "application/json")
+                    .build();
+            okhttp3.Response response = client.newCall(request).execute();
+            if (response.isSuccessful() && response.body() != null) {
+                String resp = response.body().string();
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                @SuppressWarnings("unchecked")
+                Map<String, Object> respMap = (Map<String, Object>) mapper.readValue(resp, Map.class);
+                draft.put("title", respMap.getOrDefault("title", "AI 초안 제목"));
+                draft.put("body", respMap.getOrDefault("body", ""));
+                draft.put("bulletedRequests", respMap.getOrDefault("bulletedRequests", desiredActions));
+                draft.put("attachmentGuidance", respMap.getOrDefault("attachmentGuidance", "현장 사진(문제 상황, 위치 식별 가능), 관련 영상(필요시), 증빙자료 첨부 시 처리 속도 향상"));
+            } else {
+                draft.put("title", location + " " + issueType + " 관련 민원");
+                draft.put("body", userText.toString());
+                draft.put("bulletedRequests", desiredActions);
+                draft.put("attachmentGuidance", "현장 사진(문제 상황, 위치 식별 가능), 관련 영상(필요시), 증빙자료 첨부 시 처리 속도 향상");
+            }
+        } catch (Exception e) {
+            draft.put("title", location + " " + issueType + " 관련 민원");
+            draft.put("body", userText.toString());
+            draft.put("bulletedRequests", desiredActions);
+            draft.put("attachmentGuidance", "현장 사진(문제 상황, 위치 식별 가능), 관련 영상(필요시), 증빙자료 첨부 시 처리 속도 향상");
+        }
         return draft;
+    }
+
+    // JSON 특수문자 이스케이프
+    private String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ");
     }
 }
