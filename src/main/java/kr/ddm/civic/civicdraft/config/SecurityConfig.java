@@ -4,7 +4,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * Spring Security 설정
+ * Swagger/OpenAPI 경로는 인증 없이 접근 가능
+ */
+@Schema(description = "Spring Security 설정. Swagger/OpenAPI 경로는 인증 없이 접근 가능.")
 @Configuration
 public class SecurityConfig {
     @Bean

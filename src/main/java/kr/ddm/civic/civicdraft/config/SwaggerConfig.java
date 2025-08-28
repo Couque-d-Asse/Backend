@@ -8,7 +8,12 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+/**
+ * Swagger/OpenAPI 문서 및 캐시 무효화 설정
+ */
+@Schema(description = "Swagger/OpenAPI 문서 및 캐시 무효화 설정. API 문서 자동 생성 및 캐시 비활성화.")
 @Configuration
 public class SwaggerConfig {
     @Bean
