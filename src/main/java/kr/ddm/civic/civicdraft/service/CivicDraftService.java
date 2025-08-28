@@ -25,13 +25,9 @@ import java.io.*;
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         String url = "http://localhost:8000/process/stream";
         // 요청 JSON 생성
-        // 요청 JSON 생성 (legalCandidatesJson 제거)
         StringBuilder jsonBuilder = new StringBuilder();
         jsonBuilder.append("{")
-            .append("\"userText\":\"").append(escapeJson(request.getUserText())).append("\",")
-            .append("\"photos\":").append(request.isPhotos()).append(",")
-            .append("\"videos\":").append(request.isVideos()).append(",")
-            .append("\"locationText\":\"").append(escapeJson(request.getLocationText())).append("\"");
+            .append("\"body\":\"").append(escapeJson(request.getBody())).append("\"");
         jsonBuilder.append("}");
         RequestBody body = RequestBody.create(jsonBuilder.toString(), JSON);
         Request httpRequest = new Request.Builder()
@@ -71,10 +67,7 @@ import java.io.*;
                     double confidence = qualityAssessorService.assessConfidence(true, true, true); // 실제 구현 시 draftBody 활용
                     Map<String, Object> safetyFlags = qualityAssessorService.assessSafety(draftBody);
                     CivicDraft entity = new CivicDraft();
-                    entity.setUserText(request.getUserText());
-                    entity.setPhotos(request.isPhotos());
-                    entity.setVideos(request.isVideos());
-                    entity.setLocationText(request.getLocationText());
+                    entity.setBody(draftBody); // 초안 본문 저장
                     entity.setBody(draftBody); // 초안 본문 저장
                     civicDraftRepository.save(entity);
 
@@ -124,22 +117,14 @@ import java.io.*;
         private LegalBasisService legalBasisService;
         @Autowired
         private QualityAssessorService qualityAssessorService;
-        @Autowired
-        private ChannelFieldsBuilderService channelFieldsBuilderService;
 
         public CivicDraftResponse processRequest(CivicDraftRequest request) {
     // 1. 입력 파싱
-    Map<String, Object> parsed = inputParserService.parse(request.getUserText(), request.isPhotos(), request.isVideos(), request.getLocationText());
+    Map<String, Object> parsed = inputParserService.parse(request.getBody(), false, false, "");
 
     // 1-2. 카드형 추천 로직 적용
     kr.ddm.civic.civicdraft.dto.Issue issue = new kr.ddm.civic.civicdraft.dto.Issue();
-    issue.setTitle((String) parsed.getOrDefault("title", ""));
-    issue.setDescription((String) parsed.getOrDefault("description", request.getUserText()));
-    issue.setLocation((String) parsed.getOrDefault("location", request.getLocationText()));
-    @SuppressWarnings("unchecked")
-    List<String> tags = parsed.containsKey("tags") ? (List<String>) parsed.get("tags") : new ArrayList<>();
-    issue.setTags(tags);
-    issue.setEvidenceCount((request.isPhotos() ? 1 : 0) + (request.isVideos() ? 1 : 0));
+    issue.setSummary(request.getBody());
     String channel = channelClassifierService.recommend(issue).getRecommendedChannel();
 
     // 2. 초안 생성
@@ -151,15 +136,12 @@ import java.io.*;
     List<Map<String, Object>> legalBasis = legalBasisService.buildLegalBasis(new ArrayList<>());
 
     // 4. 품질/안전 평가
-    double confidence = qualityAssessorService.assessConfidence(true, true, true); // TODO: 실제 평가 로직 구현 필요
+    double confidence = qualityAssessorService.assessConfidence(true, true, true);
     Map<String, Object> safetyFlags = qualityAssessorService.assessSafety((String) draft.get("body"));
 
     // 5. DB 저장
     CivicDraft entity = new CivicDraft();
-    entity.setUserText(request.getUserText());
-    entity.setPhotos(request.isPhotos());
-    entity.setVideos(request.isVideos());
-    entity.setLocationText(request.getLocationText());
+    entity.setBody((String) draft.get("body"));
     civicDraftRepository.save(entity);
 
     // 6. 응답 생성
@@ -168,7 +150,6 @@ import java.io.*;
     response.setTitle((String) draft.get("title"));
     response.setBody((String) draft.get("body"));
     response.setBulletedRequests(toStringList(draft.get("bulletedRequests")));
-    response.setChannelFields(channelFieldsBuilderService.build(channel, (String) parsed.get("location")));
     response.setLegalBasis(legalBasis);
     response.setConfidence(confidence);
     response.setMissingFields(toStringList(parsed.get("missingFields")));

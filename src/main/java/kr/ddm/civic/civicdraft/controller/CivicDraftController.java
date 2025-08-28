@@ -45,9 +45,7 @@ public class CivicDraftController {
     @PostMapping(value = "/recommend", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public RecommendationResponse recommend(@RequestBody Issue issue) {
         try {
-            if (issue.getTitle() != null && issue.getTitle().contains("테스트에러")) {
-                throw new RuntimeException("강제 에러 발생 테스트");
-            }
+            // 테스트 에러 로직 제거, summary만 사용
             return channelClassifierService.recommend(issue);
         } catch (Exception e) {
             log.error("/recommend API 예외", e);

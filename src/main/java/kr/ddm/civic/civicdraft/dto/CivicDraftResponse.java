@@ -13,6 +13,8 @@ public class CivicDraftResponse {
     private double confidence;
     private List<String> missingFields;
     private Map<String, Object> safetyFlags;
+    private String attachmentGuidance;
+    private String legalInfoSummary;
 
     public String getChannel() { return channel; }
     public void setChannel(String channel) { this.channel = channel; }
@@ -32,4 +34,10 @@ public class CivicDraftResponse {
     public void setMissingFields(List<String> missingFields) { this.missingFields = missingFields; }
     public Map<String, Object> getSafetyFlags() { return safetyFlags; }
     public void setSafetyFlags(Map<String, Object> safetyFlags) { this.safetyFlags = safetyFlags; }
+
+    public String getAttachmentGuidance() { return attachmentGuidance; }
+    public void setAttachmentGuidance(String attachmentGuidance) { this.attachmentGuidance = attachmentGuidance; }
+
+    public String getLegalInfoSummary() { return legalInfoSummary; }
+    public void setLegalInfoSummary(String legalInfoSummary) { this.legalInfoSummary = legalInfoSummary; }
 }
