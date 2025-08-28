@@ -44,12 +44,12 @@ public class CivicDraftController {
     )
     @PostMapping(value = "/recommend", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public RecommendationResponse recommend(@RequestBody Issue issue) {
+        // summary만 사용, 예외 발생 시 500 반환
         try {
-            // 테스트 에러 로직 제거, summary만 사용
             return channelClassifierService.recommend(issue);
         } catch (Exception e) {
             log.error("/recommend API 예외", e);
-            throw e;
+            throw new RuntimeException("추천 API 오류", e);
         }
     }
 
@@ -72,7 +72,6 @@ public class CivicDraftController {
     )
     @PostMapping(value = "/draft/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamDraft(@RequestBody CivicDraftRequest request) {
-    // CivicDraftRequest에서 legalCandidatesJson 제거됨
     SseEmitter emitter = new SseEmitter(10 * 60 * 1000L); // 10분 타임아웃
     civicDraftService.processRequestSse(request, emitter);
     return emitter;

@@ -1,32 +1,34 @@
 package kr.ddm.civic.civicdraft.dto;
 
 import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 민원 초안 생성 요청 DTO
  */
+@Schema(description = "민원 초안 생성 요청 DTO. 단계별 입력값을 누적하여 최종 민원 생성에 사용.")
 public class CivicDraftRequest {
-    /** 채널명 */
+    @Schema(description = "추천된 채널명", example = "safety_report")
     private String channel;
-    /** 우편번호 */
+    @Schema(description = "우편번호", example = "02400")
     private String address_zip;
-    /** 상세주소 */
+    @Schema(description = "상세주소", example = "서울 동대문구 이문로 123")
     private String address_detail;
-    /** 추가주소 */
+    @Schema(description = "추가주소", example = "이문동 45-1")
     private String address_extra;
-    /** 휴대전화 */
+    @Schema(description = "휴대전화", example = "010-1234-5678")
     private String phone;
-    /** 이메일 */
+    @Schema(description = "이메일", example = "user@example.com")
     private String email;
-    /** 제목 */
+    @Schema(description = "민원 제목", example = "이문로 교통 개선 요청")
     private String title;
-    /** 민원 내용 */
+    @Schema(description = "민원 내용(요약+제목 기반 GPT 생성)", example = "안녕하십니까. ...")
     private String body;
-    /** 첨부파일 메타데이터 (별도 업로드/다운로드 API에서 관리) */
+    @Schema(description = "첨부파일 메타데이터 (별도 업로드/다운로드 API에서 관리)")
     private List<AttachmentMeta> attachments;
-    /** 문자알림 신청 여부 */
+    @Schema(description = "문자알림 신청 여부", example = "true")
     private boolean sms_notify;
-    /** 공개/비공개 */
+    @Schema(description = "공개/비공개", example = "public")
     private String public_visibility;
 
     // Getter/Setter

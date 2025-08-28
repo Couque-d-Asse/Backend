@@ -16,8 +16,13 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("CivicDraft API")
-                        .description("동대문구 민원 초안 생성 서비스 API")
-                        .version("v1.0.0"));
+                        .description("동대문구 민원 초안 생성 서비스 API.\n\n민원 요약 → 채널 추천 → 단계별 입력 → GPT 기반 초안 생성 → 첨부/법률정보 안내 → DB 저장/알림")
+                        .version("v1.0.0")
+                        .contact(new io.swagger.v3.oas.models.info.Contact()
+                            .name("동대문구 민원팀")
+                            .email("support@ddm.go.kr")
+                            .url("https://www.ddm.go.kr"))
+                );
     }
 
     /**

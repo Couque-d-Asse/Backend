@@ -68,7 +68,7 @@ import java.io.*;
                     Map<String, Object> safetyFlags = qualityAssessorService.assessSafety(draftBody);
                     CivicDraft entity = new CivicDraft();
                     entity.setBody(draftBody); // 초안 본문 저장
-                    entity.setBody(draftBody); // 초안 본문 저장
+                    entity.setPublicVisibility(request.getPublic_visibility());
                     civicDraftRepository.save(entity);
 
                     // 품질/안전 평가 결과를 클라이언트에 전송(선택)
@@ -142,6 +142,7 @@ import java.io.*;
     // 5. DB 저장
     CivicDraft entity = new CivicDraft();
     entity.setBody((String) draft.get("body"));
+    entity.setPublicVisibility(request.getPublic_visibility());
     civicDraftRepository.save(entity);
 
     // 6. 응답 생성
