@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.beans.factory.annotation.Autowired;
 import kr.ddm.civic.civicdraft.service.CivicDraftService;
-import kr.ddm.civic.civicdraft.dto.CivicDraftRequest;
+import kr.ddm.civic.civicdraft.dto.DraftRequest;
 import kr.ddm.civic.civicdraft.dto.Issue;
 import kr.ddm.civic.civicdraft.dto.RecommendationResponse;
 import kr.ddm.civic.civicdraft.service.ChannelClassifierService;
@@ -71,9 +71,9 @@ public class CivicDraftController {
         }
     )
     @PostMapping(value = "/draft/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamDraft(@RequestBody CivicDraftRequest request) {
-    SseEmitter emitter = new SseEmitter(10 * 60 * 1000L); // 10분 타임아웃
-    civicDraftService.processRequestSse(request, emitter);
-    return emitter;
+    public SseEmitter streamDraft(@RequestBody DraftRequest request) {
+        SseEmitter emitter = new SseEmitter(10 * 60 * 1000L); // 10분 타임아웃
+        civicDraftService.processRequestSse(request, emitter);
+        return emitter;
     }
 }

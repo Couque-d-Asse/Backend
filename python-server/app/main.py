@@ -7,7 +7,8 @@ import traceback
 from dotenv import load_dotenv
 load_dotenv()
 from gpt_service import call_gpt
-from langchain_service import call_langchain
+from draft_generator import generate_draft
+from legal_basis import build_legal_basis
 
 app = FastAPI()
 
@@ -29,23 +30,15 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Data Models
 # =====================
 class CivicAssistRequest(BaseModel):
-    """민원 초안 생성 요청 모델"""
-    userText: str           # 민원 내용
-    photos: bool            # 사진 첨부 여부
-    videos: bool            # 동영상 첨부 여부
-    locationText: str       # 위치 정보
+    """민원 초안 생성 요청 모델 (요약+제목)"""
+    summary: str           # 민원 요약
+    title: str             # 민원 제목
 
 class CivicAssistResponse(BaseModel):
     """민원 초안 생성 응답 모델"""
     channel: str
     title: str
     body: str
-    bulletedRequests: List[str]
-    channelFields: Dict[str, Any]
-    legalBasis: List[Dict[str, Any]]
-    confidence: float
-    missingFields: List[str]
-    safetyFlags: Dict[str, Any]
 
 class Issue(BaseModel):
     """민원 요약 모델 (추천용)"""
@@ -68,30 +61,30 @@ class RecommendRequest(BaseModel):
 def process(request: CivicAssistRequest):
     """
     민원 초안 생성 (REST)
-    - 사용자의 민원 내용을 바탕으로 초안 전체 결과 반환
+    - 사용자의 민원 요약+제목을 바탕으로 초안 전체 결과 반환
     """
+    prompt_text = f"""
+민원 요약: {request.summary}
+민원 제목: {request.title}
+위 정보를 바탕으로 민원 본문을 작성해줘. 어떤 사진 첨부가 필요한지 안내해줘. 관련 법률정보도 함께 추천해줘.
+"""
     messages = [
-        {"role": "system", "content": "민원 초안 생성 서비스. 사용자의 민원 내용을 바탕으로 초안을 생성하세요."},
-        {"role": "user", "content": request.userText}
+        {"role": "system", "content": "민원 초안 생성 서비스. 사용자의 민원 요약과 제목을 바탕으로 초안을 생성하세요."},
+        {"role": "user", "content": prompt_text}
     ]
     gpt_result = call_gpt(messages) or ""
     try:
-        lc_result = call_langchain(messages)
-        if lc_result:
-            gpt_result = lc_result
+        draft_result = generate_draft(request.summary, request.title)
+        if draft_result:
+            gpt_result = draft_result
     except Exception as e:
-        print("LangChain 오류:", e)
+        print("LangChain 초안 생성 오류:", e)
         traceback.print_exc()
+    # 예시: candidates는 실제로는 GPT/LLM 또는 DB 등에서 받아야 함
     return CivicAssistResponse(
         channel="saeol",
-        title="AI 초안 제목",
-        body=gpt_result,
-        bulletedRequests=["요청1", "요청2"],
-        channelFields={"public_visibility": "private", "sms_notify": True, "category": "교통/도로", "address_text": request.locationText},
-        legalBasis=[],
-        confidence=0.9,
-        missingFields=[],
-        safetyFlags={"contains_pii": False, "defamation_risk": "low"}
+        title=request.title,
+        body=gpt_result
     )
 
 # =====================
@@ -101,19 +94,24 @@ def process(request: CivicAssistRequest):
 def process_stream(request: CivicAssistRequest):
     """
     민원 초안 생성 (SSE)
-    - 초안 결과를 실시간 chunk 단위로 반환
+    - 요약+제목 기반 초안 결과를 실시간 chunk 단위로 반환
     """
+    prompt_text = f"""
+민원 요약: {request.summary}
+민원 제목: {request.title}
+위 정보를 바탕으로 민원 본문을 작성해줘. 어떤 사진 첨부가 필요한지 안내해줘. 관련 법률정보도 함께 추천해줘.
+"""
     messages = [
-        {"role": "system", "content": "민원 초안 생성 서비스. 사용자의 민원 내용을 바탕으로 초안을 생성하세요."},
-        {"role": "user", "content": request.userText}
+        {"role": "system", "content": "민원 초안 생성 서비스. 사용자의 민원 요약과 제목을 바탕으로 초안을 생성하세요."},
+        {"role": "user", "content": prompt_text}
     ]
     gpt_result = call_gpt(messages) or ""
     try:
-        lc_result = call_langchain(messages)
-        if lc_result:
-            gpt_result = lc_result
+        draft_result = generate_draft(request.summary, request.title)
+        if draft_result:
+            gpt_result = draft_result
     except Exception as e:
-        print("LangChain 오류:", e)
+        print("LangChain 초안 생성 오류:", e)
         traceback.print_exc()
     import re
     def split_chunks(text):
