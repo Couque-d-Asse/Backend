@@ -1,11 +1,11 @@
 # channel_recommendation_service.py
 # 민원 채널 추천 기능을 담당하는 서비스 모듈
 
-from .gpt_service import call_gpt
+from gpt_service import call_gpt
 import os
 
 
-def recommend_channel(issue_summary, channels, model="gpt-5-nano"):
+def recommend_channel(issue_summary, channels, model="gpt-4.1-nano"):
     """
     OpenAI GPT 채팅 API 기반 민원 채널 추천 함수.
     issue_summary: 민원 요약 텍스트
@@ -78,12 +78,12 @@ def recommend_channel(issue_summary, channels, model="gpt-5-nano"):
 - 절차/문서: “공개 청구/자료 요청/허가 문의/점용 신청/협의서 열람”
 
 결과는 반드시 JSON 형식으로 반환해줘. 예시:
-{
+{{
   "options": [
-    { "id": "mayor_board", "title": "구청장에게 바란다", "reason": "신호주기 조정 요청이 명시적으로 포함되어 정책 개선 제안에 해당함" }
+    {{ "id": "mayor_board", "title": "구청장에게 바란다", "reason": "신호주기 조정 요청이 명시적으로 포함되어 정책 개선 제안에 해당함" }}
   ],
   "recommendedChannel": "mayor_board"
-}
+}}
 """
 
     messages = [
@@ -92,7 +92,7 @@ def recommend_channel(issue_summary, channels, model="gpt-5-nano"):
     ]
 
     print_progress(*steps[3])
-    result = call_gpt(messages, model=model, temperature=0.2, max_tokens=1200)
+    result = call_gpt(messages, model=model, max_completion_tokens=1200)
     print("채널 추천 결과:", result)
     print_progress(*steps[4])
     return result

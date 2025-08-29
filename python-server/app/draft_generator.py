@@ -2,10 +2,10 @@
 # 민원 초안 생성 기능을 담당하는 서비스 모듈
 
 import os
-from .gpt_service import call_gpt
+from gpt_service import call_gpt
 
 
-def generate_draft(summary, title, model="gpt-5-nano"):
+def generate_draft(summary, title, model="gpt-4.1-nano"):
     """
     OpenAI GPT 채팅 API 기반 민원 초안 생성 함수.
     summary: 민원 요약
@@ -44,7 +44,7 @@ def generate_draft(summary, title, model="gpt-5-nano"):
     ]
 
     print_progress(*steps[3])
-    result = call_gpt(messages, model=model, temperature=0.2, max_tokens=1200)
+    result = call_gpt(messages, model=model, max_completion_tokens=1200)
     print("GPT 실행 결과:", result)
     print_progress(*steps[4])
     return result

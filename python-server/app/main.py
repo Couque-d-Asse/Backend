@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter, Body
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Any, List, Dict
@@ -10,9 +10,11 @@ import os
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 from gpt_service import call_gpt
 from draft_generator import generate_draft
-from legal_basis import build_legal_basis
+from legal_basis import build_legal_basis, build_legal_info_summary, extract_keywords
+from channel_recommendation_service import recommend_channel
 
 app = FastAPI()
+router = APIRouter()
 
 # =====================
 # Exception Handling
@@ -66,23 +68,7 @@ def process_stream(request: CivicAssistRequest):
     민원 초안 생성 (SSE)
     - 요약+제목 기반 초안 결과를 실시간 chunk 단위로 반환
     """
-    prompt_text = f"""
-민원 요약: {request.summary}
-민원 제목: {request.title}
-위 정보를 바탕으로 민원 본문을 작성해줘. 어떤 사진 첨부가 필요한지 안내해줘. 관련 법률정보도 함께 추천해줘.
-"""
-    messages = [
-        {"role": "system", "content": "민원 초안 생성 서비스. 사용자의 민원 요약과 제목을 바탕으로 초안을 생성하세요."},
-        {"role": "user", "content": prompt_text}
-    ]
-    gpt_result = call_gpt(messages) or ""
-    try:
-        draft_result = generate_draft(request.summary, request.title)
-        if draft_result:
-            gpt_result = draft_result
-    except Exception as e:
-        print("LangChain 초안 생성 오류:", e)
-        traceback.print_exc()
+    gpt_result = generate_draft(request.summary, request.title) or ""
     import re
     def split_chunks(text):
         for s in re.split(r'(?<=[.!?]) +|\n', text):
@@ -104,25 +90,40 @@ def recommend_api(request: RecommendRequest):
     채널 추천 API
     - 민원 요약과 채널 목록을 받아 AI가 적합한 채널 후보 추천
     """
-    prompt = f"""
-민원 내용: {request.issue.summary}
-채널 목록:
-{', '.join([f'{ch.id}: {ch.title}' for ch in request.channels])}
-
-위 민원에 가장 적합한 채널 후보를 1개 이상 추천하고, 각 후보별로 추천 이유를 설명해줘.
-결과는 JSON 형식으로 반환해줘. 예시:
-{{
-  "options": [
-    {{ "id": "mayor_board", "title": "구청장에게 바란다", "reason": "신호주기 관련 민원" }}
-  ],
-  "recommendedChannel": "mayor_board"
-}}
-"""
-    ai_result = call_gpt([{"role": "user", "content": prompt}]) or ""
+    channels = [{"id": ch.id, "title": ch.title} for ch in request.channels]
+    ai_result = recommend_channel(request.issue.summary, channels)
     import json
     try:
-        result = json.loads(ai_result)
+        result = json.loads(ai_result or "")
     except Exception as e:
         print("AI 응답 파싱 오류:", e)
         result = {"options": [], "recommendedChannel": None}
     return result
+
+# =====================
+# 법률 근거 API
+# =====================
+@router.post("/legal-basis/candidates")
+def get_legal_basis_candidates(
+    summary: str = Body(..., embed=True),
+    title: str = Body(..., embed=True),
+    max_count: int = Body(7, embed=True)
+):
+    """
+    민원 요약과 제목을 받아 GPT 기반 관련 법률 후보 리스트와 근거 요약을 반환하는 API
+    max_count: 반환할 최대 법률 근거 개수 (기본 7개)
+    """
+    # 1. 키워드 추출 (참고용)
+    keywords = extract_keywords(summary, title)
+    # 2. GPT 기반 법률 후보 및 근거 생성
+    candidates = build_legal_basis(summary, title, max_count=max_count)
+    # 3. 요약 텍스트 생성
+    legal_info = build_legal_info_summary(candidates)
+    return {
+        "keywords": keywords,
+        "candidates": candidates,
+        "basis": candidates,
+        "summary": legal_info
+    }
+
+app.include_router(router, prefix="/api")
