@@ -10,8 +10,10 @@ import os
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 from gpt_service import call_gpt
 from draft_generator import generate_draft
+from photo_guide_service import extract_photo_guide
 from legal_basis import build_legal_basis, build_legal_info_summary, extract_keywords
 from channel_recommendation_service import recommend_channel
+
 
 app = FastAPI()
 router = APIRouter()
@@ -60,9 +62,9 @@ class RecommendRequest(BaseModel):
     channels: List[Channel]
 
 
-# =====================
-# 초안 생성 API (SSE)
-# =====================
+ # =====================
+ # 초안 생성 API (SSE)
+ # =====================
 @app.post("/process/stream")
 def process_stream(request: CivicAssistRequest):
     """
@@ -81,6 +83,16 @@ def process_stream(request: CivicAssistRequest):
             time.sleep(0.2)
         yield "data: [END]\n\n"
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+# 사진 첨부 안내 추출 API
+@app.post("/api/photo-guide")
+def photo_guide_api(request: CivicAssistRequest):
+    """
+    민원 초안에서 사진 첨부 안내 항목만 리스트로 반환하는 API
+    """
+    draft_text = generate_draft(request.summary, request.title, request.legal_basis) or ""
+    photo_guide = extract_photo_guide(draft_text)
+    return {"photo_guide": photo_guide}
 
 # =====================
 # 채널 추천 API
