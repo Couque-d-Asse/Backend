@@ -37,9 +37,17 @@ async def global_exception_handler(request: Request, exc: Exception):
 # =====================
 class CivicAssistRequest(BaseModel):
     """민원 초안 생성 요청 모델 (요약+제목+법률 근거)"""
-    summary: str           # 민원 요약
-    title: str             # 민원 제목
-    legal_basis: List[Dict] = []  # 선택된 법률 근거 리스트 (옵션)
+    summary: str = "이문로 일대는 올해 서울에서 새 아파트가 가장 많이 늘어나는 지역이다. 지난 1월 입주한 ‘래미안라그란데’(이문1구역·3069가구)를 시작으로 7월 ‘휘경자이디센시아’(휘경3구역·1806가구), 11월 ‘이문아이파크자이’(이문3구역·4321가구)가 줄줄이 준공할 예정이다. 이주를 진행 중인 이문4구역(3628가구 예정)까지 포함하면 이문·휘경뉴타운 일대에 4~5년 새 1만3000가구가 들어선다. 문제는 이를 받아낼 도로 용량과 우회도로가 턱없이 부족하다는 것이다. 이문·휘경뉴타운을 관통하는 이문로는 편도 2차로(왕복 4차로)에 불과하다. 회기역까지 이어지던 편도 3차로(왕복 6차로)가 좁아져 상습적으로 병목현상이 발생한다. 이마저도 곳곳에 비보호 좌회전 구간이 있어서 직진 차로로 이용할 수 있는 구간이 제한적이다. 우회도로도 마땅치 않다. 그나마 한국외국어대 앞에서 동부간선도로 방향으로 우회할 수 있는 휘경로도 사정은 마찬가지다. 신호가 짧은 데다 도로가 더욱 좁아져서다. 이문동 B공인중개사무소 관계자는 “차 네다섯 대만 지나가도 신호가 끊겨 정체가 해소되지 않는다”며 “이문아이파크자이 지하를 지나는 도로를 공사 중이지만 이문4구역 사업이 끝나야 완전 개통하기 때문에 당분간 교통 문제 해결은 요원하다”고 지적했다."
+    title: str = "이문로 교통 병목 및 도로 확장 민원"
+    legal_basis: List[Dict] = [
+        {
+            "law_name": "도로교통법",
+            "article": "제5조",
+            "enforced_on": "2022-04-05",
+            "reason": "도로의 확장 및 교통환경 개선을 위한 도로구획과 확장 관련 규정이 명시되어 있으며, 민원 내용과 직결됨.",
+            "url": "https://www.law.go.kr/LSW/lsSc.do?menuId=0&query=도로교통법"
+        }
+    ]
 
 class CivicAssistResponse(BaseModel):
     """민원 초안 생성 응답 모델"""
@@ -49,17 +57,17 @@ class CivicAssistResponse(BaseModel):
 
 class Issue(BaseModel):
     """민원 요약 모델 (추천용)"""
-    summary: str
+    summary: str = "이문로 일대 교통 병목 및 도로 확장 필요"
 
 class Channel(BaseModel):
     """추천 채널 모델"""
-    id: str
-    title: str
+    id: str = "channel1"
+    title: str = "서울시 교통행정과"
 
 class RecommendRequest(BaseModel):
     """추천 요청 모델"""
-    issue: Issue
-    channels: List[Channel]
+    issue: Issue = Issue()
+    channels: List[Channel] = [Channel()]
 
 
  # =====================
