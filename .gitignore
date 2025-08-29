@@ -1,3 +1,5 @@
+# AWS/SSH private key
+*.pem
 HELP.md
 .gradle
 build/

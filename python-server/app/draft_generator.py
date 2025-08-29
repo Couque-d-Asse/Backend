@@ -1,24 +1,22 @@
 # draft_generator.py
 # 민원 초안 생성 기능을 담당하는 서비스 모듈
 
-from langchain_community.chat_models import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 import os
+from .gpt_service import call_gpt
 
-def generate_draft(summary, title, model="gpt-4"):
+
+def generate_draft(summary, title, model="gpt-5-nano"):
     """
-    LangChain 기반 민원 초안 생성 함수.
+    OpenAI GPT 채팅 API 기반 민원 초안 생성 함수.
     summary: 민원 요약
     title: 민원 제목
     """
     steps = [
         ("OPENAI API 키 확인", 10),
         ("입력값 파싱", 20),
-        ("프롬프트 템플릿 생성", 40),
-        ("ChatOpenAI 인스턴스 생성", 60),
-        ("LLMChain 생성", 80),
-        ("LLMChain 실행", 100)
+        ("프롬프트 생성", 40),
+        ("GPT 호출", 80),
+        ("완료", 100)
     ]
     def print_progress(step, percent):
         print(f"[{percent:3}%] {step}...")
@@ -34,18 +32,19 @@ def generate_draft(summary, title, model="gpt-4"):
         return ""
 
     print_progress(*steps[2])
-    prompt = PromptTemplate(
-        input_variables=["summary", "title"],
-        template="민원 요약: {summary}\n민원 제목: {title}\n위 정보를 바탕으로 민원 본문을 작성해줘. 어떤 사진 첨부가 필요한지 안내해줘. 관련 법률정보도 함께 추천해줘."
-    )
+    prompt = f"""
+민원 요약: {summary}
+민원 제목: {title}
+위 정보를 바탕으로 민원 본문을 작성해줘. 어떤 사진 첨부가 필요한지 안내해줘. 관련 법률정보도 함께 추천해줘.
+"""
+
+    messages = [
+        {"role": "system", "content": "너는 민원 초안 작성 전문가야."},
+        {"role": "user", "content": prompt}
+    ]
 
     print_progress(*steps[3])
-    llm = ChatOpenAI(api_key=openai_api_key, model=model, temperature=0.2, max_tokens=1200)
-
+    result = call_gpt(messages, model=model, temperature=0.2, max_tokens=1200)
+    print("GPT 실행 결과:", result)
     print_progress(*steps[4])
-    chain = LLMChain(prompt=prompt, llm=llm)
-
-    print_progress(*steps[5])
-    result = chain.run(summary=summary, title=title)
-    print("LLMChain 실행 결과:", result)
     return result
