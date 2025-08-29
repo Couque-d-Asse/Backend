@@ -34,9 +34,10 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Data Models
 # =====================
 class CivicAssistRequest(BaseModel):
-    """민원 초안 생성 요청 모델 (요약+제목)"""
+    """민원 초안 생성 요청 모델 (요약+제목+법률 근거)"""
     summary: str           # 민원 요약
     title: str             # 민원 제목
+    legal_basis: List[Dict] = []  # 선택된 법률 근거 리스트 (옵션)
 
 class CivicAssistResponse(BaseModel):
     """민원 초안 생성 응답 모델"""
@@ -66,9 +67,9 @@ class RecommendRequest(BaseModel):
 def process_stream(request: CivicAssistRequest):
     """
     민원 초안 생성 (SSE)
-    - 요약+제목 기반 초안 결과를 실시간 chunk 단위로 반환
+    - 요약+제목+법률 근거 기반 초안 결과를 실시간 chunk 단위로 반환
     """
-    gpt_result = generate_draft(request.summary, request.title) or ""
+    gpt_result = generate_draft(request.summary, request.title, request.legal_basis) or ""
     import re
     def split_chunks(text):
         for s in re.split(r'(?<=[.!?]) +|\n', text):
