@@ -1,26 +1,24 @@
 from fastapi import FastAPI, Request, APIRouter, Body
 from fastapi.responses import StreamingResponse, JSONResponse
+from typing import List, Dict
 from pydantic import BaseModel
-from typing import Any, List, Dict
 import time
 import traceback
 from dotenv import load_dotenv
 import os
 # python-server 루트의 .env 파일을 명시적으로 로드
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
-from gpt_service import call_gpt
-from draft_generator import generate_draft
-from photo_guide_service import extract_photo_guide
-from legal_basis import build_legal_basis, build_legal_info_summary, extract_keywords
-from channel_recommendation_service import recommend_channel
+ 
+from services.draft_generator import generate_draft
+from services.photo_guide_service import extract_photo_guide
+from services.legal_basis import build_legal_basis, build_legal_info_summary, extract_keywords
+from services.channel_recommendation_service import recommend_channel
 
 
 app = FastAPI()
 router = APIRouter()
 
-# =====================
-# Exception Handling
-# =====================
+# FastAPI 글로벌 예외 처리
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     print("=== FastAPI 글로벌 예외 발생 ===")
@@ -32,41 +30,13 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"detail": str(exc)}
     )
 
-# =====================
-# Data Models
-# =====================
-class CivicAssistRequest(BaseModel):
-    """민원 초안 생성 요청 모델 (요약+제목+법률 근거)"""
-    summary: str           # 민원 요약
-    title: str             # 민원 제목
-    legal_basis: List[Dict] = []  # 선택된 법률 근거 리스트 (옵션)
+# 데이터 모델 import (models 폴더)
+from models.civicdraft import CivicDraftRequest, CivicDraftResponse
+from models.channel import Issue, Channel, RecommendRequest
 
-class CivicAssistResponse(BaseModel):
-    """민원 초안 생성 응답 모델"""
-    channel: str
-    title: str
-    body: str
-
-class Issue(BaseModel):
-    """민원 요약 모델 (추천용)"""
-    summary: str
-
-class Channel(BaseModel):
-    """추천 채널 모델"""
-    id: str
-    title: str
-
-class RecommendRequest(BaseModel):
-    """추천 요청 모델"""
-    issue: Issue
-    channels: List[Channel]
-
-
- # =====================
- # 초안 생성 API (SSE)
- # =====================
+# 민원 초안 생성 API (SSE)
 @app.post("/process/stream")
-def process_stream(request: CivicAssistRequest):
+def process_stream(request: CivicDraftRequest):
     """
     민원 초안 생성 (SSE)
     - 요약+제목+법률 근거 기반 초안 결과를 실시간 chunk 단위로 반환
@@ -86,7 +56,7 @@ def process_stream(request: CivicAssistRequest):
 
 # 사진 첨부 안내 추출 API
 @app.post("/api/photo-guide")
-def photo_guide_api(request: CivicAssistRequest):
+def photo_guide_api(request: CivicDraftRequest):
     """
     민원 초안에서 사진 첨부 안내 항목만 리스트로 반환하는 API
     """
@@ -94,9 +64,7 @@ def photo_guide_api(request: CivicAssistRequest):
     photo_guide = extract_photo_guide(draft_text)
     return {"photo_guide": photo_guide}
 
-# =====================
 # 채널 추천 API
-# =====================
 @app.post("/api/recommend")
 def recommend_api(request: RecommendRequest):
     """
@@ -113,9 +81,7 @@ def recommend_api(request: RecommendRequest):
         result = {"options": [], "recommendedChannel": None}
     return result
 
-# =====================
-# 법률 근거 API
-# =====================
+# 법률 근거 후보/요약 API
 @router.post("/legal-basis/candidates")
 def get_legal_basis_candidates(
     summary: str = Body(..., embed=True),

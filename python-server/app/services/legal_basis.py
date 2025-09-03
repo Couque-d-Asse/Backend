@@ -2,7 +2,7 @@
 # 법률정보 생성 및 요약 파이썬 모듈
 from typing import List, Dict
 import requests
-from gpt_service import call_gpt
+from services.gpt_service import call_gpt
 
 def build_legal_info_summary(legal_basis: List[Dict]) -> str:
     if not legal_basis:
@@ -95,20 +95,20 @@ def build_legal_basis(summary: str, title: str, max_count: int = 5) -> List[Dict
 
 예시:
 [
-  {{
+  {
     "law_name": "도로교통법",
     "article": "제5조",
     "enforced_on": "2023-07-01",
     "reason": "신호등 설치 및 운영 기준이 명시되어 있어 교통 신호 개선 민원과 직접적으로 관련됨.",
     "url": "https://www.law.go.kr/LSW/lsSc.do?menuId=1&query=도로교통법"
-  }},
-  {{
+  },
+  {
     "law_name": "교통안전법",
     "article": "제10조",
     "enforced_on": "2022-01-01",
     "reason": "교통안전시설의 설치 및 관리에 관한 규정이 민원 내용과 연관됨.",
     "url": "https://www.law.go.kr/LSW/lsSc.do?menuId=1&query=교통안전법"
-  }}
+  }
 ]
 """
     messages = [

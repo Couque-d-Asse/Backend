@@ -1,9 +1,8 @@
 # channel_recommendation_service.py
 # 민원 채널 추천 기능을 담당하는 서비스 모듈
 
-from gpt_service import call_gpt
+from services.gpt_service import call_gpt
 import os
-
 
 def recommend_channel(issue_summary, channels, model="gpt-4.1-nano"):
     """
@@ -78,12 +77,12 @@ def recommend_channel(issue_summary, channels, model="gpt-4.1-nano"):
 - 절차/문서: “공개 청구/자료 요청/허가 문의/점용 신청/협의서 열람”
 
 결과는 반드시 JSON 형식으로 반환해줘. 예시:
-{{
+{
   "options": [
-    {{ "id": "mayor_board", "title": "구청장에게 바란다", "reason": "신호주기 조정 요청이 명시적으로 포함되어 정책 개선 제안에 해당함" }}
+    { "id": "mayor_board", "title": "구청장에게 바란다", "reason": "신호주기 조정 요청이 명시적으로 포함되어 정책 개선 제안에 해당함" }
   ],
   "recommendedChannel": "mayor_board"
-}}
+}
 """
 
     messages = [

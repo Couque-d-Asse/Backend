@@ -2,8 +2,7 @@
 # 민원 초안 생성 기능을 담당하는 서비스 모듈
 
 import os
-from gpt_service import call_gpt
-
+from .gpt_service import call_gpt
 
 def generate_draft(summary, title, legal_basis=None, model="gpt-4.1-nano"):
     """
