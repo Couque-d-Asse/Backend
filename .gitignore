@@ -52,7 +52,8 @@ python-server/venv/
 .env
 app.log*
  
-# Node.js 북마클릿 서버
+# Node.js
+node_modules/
 nodejs-server/node_modules/
 nodejs-server/package-lock.json
 nodejs-server/.env

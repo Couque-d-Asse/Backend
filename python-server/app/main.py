@@ -16,6 +16,16 @@ from services.channel_recommendation_service import recommend_channel
 
 
 app = FastAPI()
+
+# CORS 미들웨어 추가 (프론트에서 API 호출 허용)
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 개발 시 전체 허용, 운영 시 도메인 제한 권장
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 router = APIRouter()
 
 # FastAPI 글로벌 예외 처리
